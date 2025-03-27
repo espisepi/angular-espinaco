@@ -1,0 +1,11 @@
+- Crear proyecto angular
+-- ng new angular-espinaco
+--- SCSS, SSR (le he dado si a todo)
+
+- Crear componentes HomePageComponent y AboutPageComponent
+-- ng generate component pages/home-page
+-- ng generate component pages/about-page
+
+- Añadir componentes HomePageComponent y AboutPageComponent a las rutas /home y /about
+- Añadir enlaces de las rutas /home y /about en AppComponent
+-- Siguiendo tutorial: https://angular.dev/guide/routing/common-router-tasks
