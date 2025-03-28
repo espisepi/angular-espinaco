@@ -1,0 +1,11 @@
+dame el codigo de un componente angular que sea un menu de navegacion. Es un icono de hamburguesa hecho por scss y cuando se hace click se abre la ventana de menu por encima con los enlaces del menu y con un icono de cerrar para cerrar el menu
+
+y haz que los links sean un arbol de links con padres e hijos y se muestren los hijos recursivamente
+
+Creame el componente con la accesibilidad al 100%
+
+dame el codigo para angular v19 con las directivas @if y todo
+
+es mejor usar signal en los componentes anteriores?
+
+=========================

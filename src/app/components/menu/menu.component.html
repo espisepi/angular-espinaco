@@ -1,0 +1,41 @@
+<!-- Botón hamburguesa -->
+<button
+  class="hamburger"
+  type="button"
+  (click)="toggleMenu()"
+  [attr.aria-expanded]="isOpen()"
+  aria-controls="main-menu"
+  aria-label="Abrir menú de navegación"
+>
+  <span></span><span></span><span></span>
+</button>
+
+<!-- Menú -->
+@if (isOpen()) {
+  <div
+    id="main-menu"
+    class="overlay"
+    role="dialog"
+    aria-modal="true"
+    (keydown)="handleKeyDown($event)"
+  >
+    <button
+      class="close-button"
+      type="button"
+      (click)="closeMenu()"
+      aria-label="Cerrar menú"
+    >
+      ❌
+    </button>
+
+    <nav role="navigation" aria-label="Menú principal">
+      <ul class="menu-list">
+        @for (item of menuItems; track item.label) {
+          <li>
+            <app-nav-item [item]="item" (closeMenu)="closeMenu()"></app-nav-item>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+}

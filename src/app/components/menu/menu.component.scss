@@ -1,0 +1,40 @@
+.hamburger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  span {
+    background: black;
+    height: 3px;
+    border-radius: 2px;
+    transition: 0.3s;
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: white;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+
+  .close-button {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}

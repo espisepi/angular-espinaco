@@ -1,0 +1,32 @@
+<div class="nav-item">
+  @if (item.link; as href) {
+    <a
+      [href]="href"
+      role="menuitem"
+      tabindex="0"
+      (click)="onActivate(href)"
+    >
+      {{ item.label }}
+    </a>
+  } @else {
+    <button
+      class="expandable"
+      type="button"
+      (click)="toggle()"
+      [attr.aria-expanded]="expanded()"
+      aria-haspopup="true"
+    >
+      {{ item.label }}
+    </button>
+
+    @if (expanded() && item.children?.length) {
+      <ul class="submenu" role="menu">
+        @for (child of item.children; track child.label) {
+          <li>
+            <app-nav-item [item]="child" (closeMenu)="closeMenu.emit()"></app-nav-item>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>
