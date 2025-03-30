@@ -1,0 +1,47 @@
+<div class="container">
+  <button
+    type="button"
+    class="hamburger-menu"
+    aria-label="Toggle navigation menu"
+    [class.active]="active()"
+    (click)="toggleMenu()"
+  >
+    <span class="line" aria-hidden="true"></span>
+    <span class="line" aria-hidden="true"></span>
+  </button>
+
+  <div class="navbar" [class.active]="active()">
+    <video
+      class="nav-video"
+      src="assets/video.mp4"
+      autoplay
+      muted
+      loop
+      aria-hidden="true"
+    ></video>
+
+    <img
+      src="assets/img.png"
+      class="navbar-img"
+      [style.transform]="getTransform()"
+      alt=""
+      aria-hidden="true"
+    />
+
+    <nav class="nav" aria-label="Main navigation">
+      @for (text of navText; let idx = $index; track idx) {
+      <a
+        href="#"
+        class="nav-link"
+        [attr.data-position]="60 - idx * 30"
+        role="link"
+        (mouseenter)="moveImage(60 - idx * 30)"
+      >
+        @for (char of text.split(''); let i = $index; track i) {
+        <span [style.--i]="'.' + i + 's'">{{ char }}</span>
+        }
+      </a>
+      }
+    </nav>
+  </div>
+</div>
