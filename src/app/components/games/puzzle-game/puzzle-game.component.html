@@ -1,0 +1,62 @@
+<div class="container">
+  <div class="puzzle-wrapper">
+    <!-- Zona de piezas arrastrables -->
+    <div class="cells">
+      @for (piece of puzzlePieces(); let i = $index; track i) {
+        <div
+          class="cell-piece"
+          draggable="true"
+          [ngStyle]="piece.style"
+          (dragstart)="($event.dataTransfer?.setData('text/plain', piece.id.toString()))"
+        ></div>
+      }
+    </div>
+
+    <!-- Zona del puzzle -->
+    <div class="puzzle">
+      @for (dropzone of dropzones(); let i = $index; track i) {
+        <div
+          class="dropzone"
+          (dragover)="allowDrop($event)"
+          (drop)="onDrop(i, $event)"
+        >
+          @if (dropzone !== null) {
+            <div
+              class="dropped-piece"
+              [ngStyle]="placedStyles()[dropzone!]"
+            ></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Imagen final con botones -->
+    <div class="final-img" [style.background-image]="'url(' + imageUrl() + ')'">
+      <div class="btns">
+        <button class="img-btn btn" (click)="randomImage()">get random image</button>
+        <label for="input-file" class="img-btn btn">upload new image</label>
+      </div>
+      <input type="file" id="input-file" (change)="uploadImage($event)" />
+    </div>
+  </div>
+
+  <!-- Modal -->
+  @if (showModal()) {
+    <div class="modal active">
+      <div class="modal-content">
+        <h2 class="modal-heading">Game Over</h2>
+        <h3 class="modal-text">
+          {{ modalMessage() }} <span class="attempt">{{ attempts() }}</span> wrong attempts
+        </h3>
+        <button class="modal-btn btn" (click)="startAgain()">Start Again</button>
+      </div>
+    </div>
+  }
+
+  <!-- Loader -->
+  <div class="loader" [class.active]="isLoading()">
+    <!-- <img src="assets/images/loader.gif" /> -->
+  </div>
+
+  <h1 class="heading">Puzzle Quest</h1>
+</div>
