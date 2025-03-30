@@ -1,1 +1,59 @@
-<div #canvasContainer class="canvas-container"></div>
+@if (isLoading()) {
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Cargando modelos 3D...</p>
+  </div>
+}
+
+<div #canvasContainer class="canvas-container" [class.blurred]="isLoading()" ></div>
+
+@if (!isLoading()) {
+  <section class="model-controls">
+    <h2>Seleccionar modelo</h2>
+
+    <select (change)="selectedModelIndex.set(+$any($event.target).value)">
+      @for (model of loadedModels(); track $index) {
+        <option [value]="$index">{{ model.name }}</option>
+      }
+    </select>
+
+    @if (selectedModelIndex() !== null) {
+      <div class="sliders">
+        <p>Usa <b>W A S D</b> para mover y <b>Q / E</b> para rotar</p>
+
+        <label>X:
+          <input
+            type="range"
+            min="-5"
+            max="5"
+            step="0.1"
+            [value]="selectedModel.position[0]"
+            (input)="updateModelPosition('x', +$any($event.target).value)"
+          />
+        </label>
+        <label>Y:
+          <input
+            type="range"
+            min="-5"
+            max="5"
+            step="0.1"
+            [value]="selectedModel.position[1]"
+            (input)="updateModelPosition('y', +$any($event.target).value)"
+          />
+        </label>
+        <label>Z:
+          <input
+            type="range"
+            min="-5"
+            max="5"
+            step="0.1"
+            [value]="selectedModel.position[2]"
+            (input)="updateModelPosition('z', +$any($event.target).value)"
+          />
+        </label>
+
+        <button (click)="resetSelectedModelPosition()">Resetear posición</button>
+      </div>
+    }
+  </section>
+}
