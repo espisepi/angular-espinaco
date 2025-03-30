@@ -1,3 +1,20 @@
+
+
+- Crear los componentes copiando los siguientes proyectos:
+-- 10 mega responsives websites
+-- advanced-css-course
+-- 50projects50days
+-- Proyectos buenos con angular y firebase:
+--- https://www.udemy.com/course/aprende-angular-desde-0-con-10-proyectos-completos/learn/lecture/45585285?start=124#overview
+
+- Pedirle a chatgpt que convierta el codigo
+de los proyectos de udemy en componentes angular v19 con signals
+
+
+
+==============================================
+
+
 - Crear proyecto angular
 -- ng new angular-espinaco
 --- SCSS, SSR (le he dado si a todo)
@@ -13,3 +30,6 @@
 - Crear componente customizable y generico de NavigationBar (Mirar proyecto de mi trabajo)
 y mostrarlo en todas las paginas, es decir, añadirlo en app.component.html
 ( lo he preguntado a chatgpt xD y que me lo haga con accesibilidad)
+
+
+=================

@@ -9,5 +9,5 @@ import { MenuComponent } from "./components/menu/menu.component";
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'angular-espinaco';
+
 }
