@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="wrapper" (click)="onWrapperClick($event)">
+    <!-- La grilla; se añade la clase "change" cuando hay imagen seleccionada -->
+    <div
+      #grid
+      class="grid"
+      [class.change]="selectedImage() !== null"
+      (mousemove)="onMouseMove($event)"
+      (mouseleave)="onMouseLeave()"
+    >
+      <!-- Uso de *ngFor para iterar sobre las imágenes -->
+      <div *ngFor="let image of images()">
+        <div class="img-wrapper">
+          <img
+            class="grid-img"
+            [src]="image"
+            (click)="onImageClick($event, image)"
+          />
+        </div>
+      </div>
+    </div>
+    <!-- Sombra que sigue al cursor -->
+    <div
+      class="shadow"
+      [style.top]="shadowTop()"
+      [style.left]="shadowLeft()"
+      [style.opacity]="shadowOpacity()"
+    ></div>
+    <!-- Se muestra la imagen ampliada si hay alguna seleccionada, usando *ngIf -->
+    <img *ngIf="selectedImage()" class="big-img" [src]="selectedImage()" />
+  </div>
+</div>
