@@ -1,0 +1,47 @@
+<div class="navigation">
+  <button
+    class="navigation__button"
+    type="button"
+    aria-label="Toggle navigation menu"
+    (click)="toggleNav()"
+    [attr.aria-expanded]="isOpen()"
+    [attr.aria-controls]="'navigationMenu'"
+  >
+    <span
+      class="navigation__icon"
+      [class.open]="isOpen()"
+      aria-hidden="true"
+    ></span>
+  </button>
+
+  <div
+    class="navigation__background"
+    [class.open]="isOpen()"
+    aria-hidden="true"
+  ></div>
+
+  <nav
+    class="navigation__nav"
+    [class.open]="isOpen()"
+    id="navigationMenu"
+    role="navigation"
+  >
+    <ul class="navigation__list">
+      <li class="navigation__item">
+        <a routerLink="/about" (click)="closeNav()" class="navigation__link"><span>01</span>About Natous</a>
+      </li>
+      <li class="navigation__item">
+        <a routerLink="/benefits" (click)="closeNav()" class="navigation__link"><span>02</span>Your benefits</a>
+      </li>
+      <li class="navigation__item">
+        <a routerLink="/tours" (click)="closeNav()" class="navigation__link"><span>03</span>Popular tours</a>
+      </li>
+      <li class="navigation__item">
+        <a routerLink="/stories" (click)="closeNav()" class="navigation__link"><span>04</span>Stories</a>
+      </li>
+      <li class="navigation__item">
+        <a routerLink="/book" (click)="closeNav()" class="navigation__link"><span>05</span>Book now</a>
+      </li>
+    </ul>
+  </nav>
+</div>
