@@ -145,3 +145,8 @@
 #file-upload {
   display: none;
 }
+
+.puzzle-cell.active {
+  background-color: #9898ec;
+  transition: background-color 0.3s;
+}

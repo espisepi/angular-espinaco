@@ -21,18 +21,22 @@
       <div
         class="puzzle-cell"
         [attr.data-index]="cell.index"
-        (dragover)="$event.preventDefault()"
+        (dragover)="onDragOver(cell.index); $event.preventDefault()"
+        (dragleave)="onDragLeave(cell.index)"
         (drop)="onDrop(cell.index)"
+        [class.active]="hoveredCell() === cell.index"
       >
         @if (cell.placed != null) {
         <div
           class="draggable"
+          [attr.draggable]="true"
+          (dragstart)="onDragStart(cell.placed!)"
           [style.background-image]="'url(' + baseImage() + ')'"
           [style.background-position]="
             '-' +
-            bgPositions()[cell.placed].left +
+            bgPositions()[cell.placed!].left +
             'vw -' +
-            bgPositions()[cell.placed].top +
+            bgPositions()[cell.placed!].top +
             'vw'
           "
         ></div>

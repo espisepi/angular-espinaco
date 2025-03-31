@@ -7,7 +7,7 @@ import {
   effect,
   inject,
   Renderer2,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -31,24 +31,51 @@ export class PuzzleGameComponent {
   readonly rows = 4;
 
   readonly topPositions = Array.from({ length: this.rows }, (_, i) => i * 6);
-  readonly leftPositions = Array.from({ length: this.columns }, (_, i) => i * 8);
+  readonly leftPositions = Array.from(
+    { length: this.columns },
+    (_, i) => i * 8
+  );
 
-  baseImage = signal('https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?w=800');
+  baseImage = signal(
+    'https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?w=800'
+  );
 
   bgPositions = computed(() =>
-    this.topPositions.flatMap((top) => this.leftPositions.map((left) => ({ top, left })))
+    this.topPositions.flatMap((top) =>
+      this.leftPositions.map((left) => ({ top, left }))
+    )
   );
 
   shuffledPositions = signal<{ top: number; left: number }[]>([]);
 
   puzzleGrid = signal<{ index: number; placed?: number }[]>([]);
-  pieces = signal<{ index: number; bg: { top: number; left: number }; pos: { top: number; left: number } }[]>([]);
+  pieces = signal<
+    {
+      index: number;
+      bg: { top: number; left: number };
+      pos: { top: number; left: number };
+    }[]
+  >([]);
 
   selectedPiece = signal<number | null>(null);
   correct = signal(0);
   wrong = signal(0);
   showModal = signal(false);
   won = signal(false);
+
+  // Hover =========
+  hoveredCell = signal<number | null>(null);
+
+  onDragOver(index: number) {
+    this.hoveredCell.set(index);
+  }
+
+  onDragLeave(index: number) {
+    if (this.hoveredCell() === index) {
+      this.hoveredCell.set(null);
+    }
+  }
+  // FIN Hover =========
 
   ngOnInit() {
     this.initGame();
@@ -65,7 +92,9 @@ export class PuzzleGameComponent {
     }));
 
     this.pieces.set(pieces);
-    this.puzzleGrid.set(Array.from({ length: this.cellsAmount }, (_, i) => ({ index: i })));
+    this.puzzleGrid.set(
+      Array.from({ length: this.cellsAmount }, (_, i) => ({ index: i }))
+    );
     this.correct.set(0);
     this.wrong.set(0);
     this.showModal.set(false);
@@ -82,10 +111,9 @@ export class PuzzleGameComponent {
   }
 
   shufflePositions() {
-    return this.shuffle(this.leftPositions)
-      .flatMap((left) =>
-        this.shuffle(this.topPositions).map((top) => ({ left, top }))
-      );
+    return this.shuffle(this.leftPositions).flatMap((left) =>
+      this.shuffle(this.topPositions).map((top) => ({ left, top }))
+    );
   }
 
   onDragStart(i: number) {
@@ -96,54 +124,73 @@ export class PuzzleGameComponent {
     const selected = this.selectedPiece();
     if (selected == null) return;
 
-    const cell = this.puzzleGrid().find(c => c.index === cellIndex);
-    if (!cell || cell.placed != null) return;
+    const grid = this.puzzleGrid();
+    const targetCell = grid.find((c) => c.index === cellIndex);
+    if (!targetCell || targetCell.placed != null) return;
 
-    const pieces = this.pieces().filter(p => p.index !== selected);
-    const selectedPiece = this.pieces().find(p => p.index === selected);
-    if (!selectedPiece) return;
-
-    // Colocar pieza
-    this.puzzleGrid.update(grid =>
-      grid.map(c => (c.index === cellIndex ? { ...c, placed: selected } : c))
+    // Eliminar la pieza anterior (si estaba colocada)
+    this.puzzleGrid.update((cells) =>
+      cells.map((c) =>
+        c.placed === selected ? { ...c, placed: undefined } : c
+      )
     );
 
-    this.pieces.set(pieces);
+    // Colocar la nueva en el nuevo destino
+    this.puzzleGrid.update((cells) =>
+      cells.map((c) => (c.index === cellIndex ? { ...c, placed: selected } : c))
+    );
 
-    if (selected === cellIndex) {
-      this.correct.update(v => v + 1);
-    } else {
-      this.wrong.update(v => v + 1);
+    // Eliminar la pieza de las sueltas (.cells) si existía
+    const remaining = this.pieces().filter((p) => p.index !== selected);
+    this.pieces.set(remaining);
+
+    // Actualizar puntos correctos
+    const correctNow = this.puzzleGrid().filter(
+      (c) => c.placed === c.index
+    ).length;
+    this.correct.set(correctNow);
+
+    if (selected !== cellIndex) {
+      this.wrong.update((v) => v + 1);
     }
 
-    const totalCorrect = this.correct();
-    if (totalCorrect === this.cellsAmount) {
+    // Fin del juego
+    const totalPlaced = this.puzzleGrid().filter(
+      (c) => c.placed != null
+    ).length;
+    if (correctNow === this.cellsAmount) {
       this.won.set(true);
       this.showModal.set(true);
-    } else if (!this.puzzleGrid().some(c => c.placed == null)) {
+    } else if (totalPlaced === this.cellsAmount) {
       this.won.set(false);
       this.showModal.set(true);
     }
+
+    // Limpiar estado
+    this.selectedPiece.set(null);
+    this.hoveredCell.set(null);
   }
 
   resetGame() {
+    this.selectedPiece.set(null);
+    this.hoveredCell.set(null);
     this.initGame();
   }
 
   trackByIndex = (i: number) => i;
 
   handleImageUpload(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
 
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageUrl = reader.result as string;
-      this.baseImage.set(imageUrl);
-      this.resetGame();
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imageUrl = reader.result as string;
+        this.baseImage.set(imageUrl);
+        this.resetGame();
+      };
+      reader.readAsDataURL(file);
+    }
   }
-}
 }
