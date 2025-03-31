@@ -150,3 +150,25 @@
   background-color: #9898ec;
   transition: background-color 0.3s;
 }
+
+.puzzle-cell.clickable {
+  cursor: pointer;
+}
+
+.puzzle-cell .draggable {
+  cursor: pointer;
+}
+
+.draggable {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.2);
+    z-index: 2;
+  }
+}
+
+.cells .draggable:hover {
+  transform: scale(1.1);
+}

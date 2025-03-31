@@ -25,6 +25,7 @@
         (dragleave)="onDragLeave(cell.index)"
         (drop)="onDrop(cell.index)"
         [class.active]="hoveredCell() === cell.index"
+        [class.clickable]="cell.placed != null"
       >
         @if (cell.placed != null) {
         <div
