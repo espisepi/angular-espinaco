@@ -1,153 +1,149 @@
 import {
   Component,
+  Input,
+  Signal,
   signal,
-  OnInit,
-  ChangeDetectionStrategy,
   computed,
+  effect,
+  inject,
+  Renderer2,
+  ViewEncapsulation
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  standalone: true,
   selector: 'sp-puzzle-game',
-  templateUrl: './puzzle-game.component.html',
-  styleUrls: ['./puzzle-game.component.scss'],
+  standalone: true,
   imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrls: ['./puzzle-game.component.scss'],
+  encapsulation: ViewEncapsulation.Emulated,
+  templateUrl: './puzzle-game.component.html',
 })
-export class PuzzleGameComponent implements OnInit {
-  readonly COLS = 5;
-  readonly ROWS = 4;
-  readonly CELLS = this.COLS * this.ROWS;
+export class PuzzleGameComponent {
+  private renderer = inject(Renderer2);
 
-  imageUrl = signal<string>('assets/img.png');
-  isLoading = signal<boolean>(false);
-  showModal = signal<boolean>(false);
-  modalMessage = signal<string>('You Won 😍');
-  attempts = signal<number>(0);
-  correct = signal<number>(0);
+  @Input() set imageUrl(url: string | undefined) {
+    if (url) this.baseImage.set(url);
+  }
 
-  puzzlePieces = signal<
-    { id: number; bgPos: string; style: { [key: string]: string } }[]
-  >([]);
-  dropzones = signal<(number | null)[]>(Array(this.CELLS).fill(null));
+  readonly cellsAmount = 20;
+  readonly columns = 5;
+  readonly rows = 4;
 
-  placedStyles = computed(() => {
-    const image = this.imageUrl();
-    const pieces = this.puzzlePieces();
-    const styles: { [key: number]: { [key: string]: string } } = {};
-    for (const piece of pieces) {
-      styles[piece.id] = {
-        width: '100%',
-        height: '100%',
-        'background-image': `url(${image})`,
-        'background-position': piece.bgPos,
-        'background-size': '40vw 24vw',
-        'background-repeat': 'no-repeat',
-      };
-    }
-    return styles;
-  });
+  readonly topPositions = Array.from({ length: this.rows }, (_, i) => i * 6);
+  readonly leftPositions = Array.from({ length: this.columns }, (_, i) => i * 8);
+
+  baseImage = signal('https://images.unsplash.com/photo-1516117172878-fd2c41f4a759?w=800');
+
+  bgPositions = computed(() =>
+    this.topPositions.flatMap((top) => this.leftPositions.map((left) => ({ top, left })))
+  );
+
+  shuffledPositions = signal<{ top: number; left: number }[]>([]);
+
+  puzzleGrid = signal<{ index: number; placed?: number }[]>([]);
+  pieces = signal<{ index: number; bg: { top: number; left: number }; pos: { top: number; left: number } }[]>([]);
+
+  selectedPiece = signal<number | null>(null);
+  correct = signal(0);
+  wrong = signal(0);
+  showModal = signal(false);
+  won = signal(false);
 
   ngOnInit() {
-    this.loadImage(this.imageUrl());
+    this.initGame();
   }
 
-  async loadImage(url: string) {
-    this.isLoading.set(true);
-    const grid = this.shuffle(this.generateBackgroundPositions());
+  initGame() {
+    const shuffled = this.shufflePositions();
+    const bg = this.bgPositions();
 
-    this.puzzlePieces.set(
-      grid.map((pos, i) => ({
-        id: i,
-        bgPos: `-${pos[1]}vw -${pos[0]}vw`,
-        style: {
-          position: 'absolute',
-          top: `${Math.random() * 18}vw`,
-          left: `${Math.random() * 32}vw`,
-          width: 'calc(40vw / 5)',
-          height: 'calc(24vw / 4)',
-          'background-image': `url(${url})`,
-          'background-position': `-${pos[1]}vw -${pos[0]}vw`,
-          'background-size': '40vw 24vw',
-          'background-repeat': 'no-repeat',
-          cursor: 'grab',
-        },
-      }))
+    const pieces = Array.from({ length: this.cellsAmount }, (_, i) => ({
+      index: i,
+      bg: bg[i],
+      pos: shuffled[i],
+    }));
+
+    this.pieces.set(pieces);
+    this.puzzleGrid.set(Array.from({ length: this.cellsAmount }, (_, i) => ({ index: i })));
+    this.correct.set(0);
+    this.wrong.set(0);
+    this.showModal.set(false);
+    this.won.set(false);
+  }
+
+  shuffle<T>(array: T[]): T[] {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  shufflePositions() {
+    return this.shuffle(this.leftPositions)
+      .flatMap((left) =>
+        this.shuffle(this.topPositions).map((top) => ({ left, top }))
+      );
+  }
+
+  onDragStart(i: number) {
+    this.selectedPiece.set(i);
+  }
+
+  onDrop(cellIndex: number) {
+    const selected = this.selectedPiece();
+    if (selected == null) return;
+
+    const cell = this.puzzleGrid().find(c => c.index === cellIndex);
+    if (!cell || cell.placed != null) return;
+
+    const pieces = this.pieces().filter(p => p.index !== selected);
+    const selectedPiece = this.pieces().find(p => p.index === selected);
+    if (!selectedPiece) return;
+
+    // Colocar pieza
+    this.puzzleGrid.update(grid =>
+      grid.map(c => (c.index === cellIndex ? { ...c, placed: selected } : c))
     );
 
-    this.correct.set(0);
-    this.attempts.set(0);
-    this.dropzones.set(Array(this.CELLS).fill(null));
-    this.isLoading.set(false);
-  }
+    this.pieces.set(pieces);
 
-  async randomImage() {
-    this.isLoading.set(true);
-    const res = await fetch('https://source.unsplash.com/random/1920x1080');
-    this.imageUrl.set(res.url);
-    await this.loadImage(res.url);
-  }
+    if (selected === cellIndex) {
+      this.correct.update(v => v + 1);
+    } else {
+      this.wrong.update(v => v + 1);
+    }
 
-  uploadImage(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const url = URL.createObjectURL(input.files[0]);
-      this.imageUrl.set(url);
-      this.loadImage(url);
+    const totalCorrect = this.correct();
+    if (totalCorrect === this.cellsAmount) {
+      this.won.set(true);
+      this.showModal.set(true);
+    } else if (!this.puzzleGrid().some(c => c.placed == null)) {
+      this.won.set(false);
+      this.showModal.set(true);
     }
   }
 
-  onDrop(i: number, event: DragEvent) {
-    event.preventDefault();
-    const draggedId = Number(event.dataTransfer?.getData('text/plain'));
-    const zones = [...this.dropzones()];
-    const pieces = [...this.puzzlePieces()];
-
-    if (zones[i] === null) {
-      zones[i] = draggedId;
-      this.dropzones.set(zones);
-
-      // Eliminar la pieza de la zona inicial
-      const updatedPieces = pieces.filter(p => p.id !== draggedId);
-      this.puzzlePieces.set(updatedPieces);
-
-      const correct = zones.reduce<number>((acc, val, idx) => {
-        return val === idx ? acc + 1 : acc;
-      }, 0);
-      this.correct.set(correct);
-
-      if (correct === this.CELLS) {
-        this.modalMessage.set('YOU WON 😍');
-        this.showModal.set(true);
-      } else if (!zones.includes(null)) {
-        this.modalMessage.set('You Lost 😢. Please Try Again');
-        this.showModal.set(true);
-      } else if (draggedId !== i) {
-        this.attempts.update(a => a + 1);
-      }
-    }
+  resetGame() {
+    this.initGame();
   }
 
-  allowDrop(event: DragEvent) {
-    event.preventDefault();
-  }
+  trackByIndex = (i: number) => i;
 
-  startAgain() {
-    location.reload();
-  }
+  handleImageUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
 
-  private shuffle<T>(array: T[]): T[] {
-    return [...array].sort(() => Math.random() - 0.5);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageUrl = reader.result as string;
+      this.baseImage.set(imageUrl);
+      this.resetGame();
+    };
+    reader.readAsDataURL(file);
   }
-
-  private generateBackgroundPositions(): [number, number][] {
-    const positions: [number, number][] = [];
-    for (let y = 0; y < this.ROWS; y++) {
-      for (let x = 0; x < this.COLS; x++) {
-        positions.push([y * 6, x * 8]);
-      }
-    }
-    return positions;
-  }
+}
 }

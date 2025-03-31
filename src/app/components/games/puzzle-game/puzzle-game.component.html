@@ -1,62 +1,76 @@
 <div class="container">
   <div class="puzzle-wrapper">
-    <!-- Zona de piezas arrastrables -->
     <div class="cells">
-      @for (piece of puzzlePieces(); let i = $index; track i) {
-        <div
-          class="cell-piece"
-          draggable="true"
-          [ngStyle]="piece.style"
-          (dragstart)="($event.dataTransfer?.setData('text/plain', piece.id.toString()))"
-        ></div>
+      @for (piece of pieces(); track trackByIndex) {
+      <div
+        class="draggable"
+        [attr.draggable]="true"
+        (dragstart)="onDragStart(piece.index)"
+        [style.top]="piece.pos.top + 'vw'"
+        [style.left]="piece.pos.left + 'vw'"
+        [style.background-image]="'url(' + baseImage() + ')'"
+        [style.background-position]="
+          '-' + piece.bg.left + 'vw ' + '-' + piece.bg.top + 'vw'
+        "
+      ></div>
       }
     </div>
 
-    <!-- Zona del puzzle -->
     <div class="puzzle">
-      @for (dropzone of dropzones(); let i = $index; track i) {
+      @for (cell of puzzleGrid(); track trackByIndex) {
+      <div
+        class="puzzle-cell"
+        [attr.data-index]="cell.index"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop(cell.index)"
+      >
+        @if (cell.placed != null) {
         <div
-          class="dropzone"
-          (dragover)="allowDrop($event)"
-          (drop)="onDrop(i, $event)"
-        >
-          @if (dropzone !== null) {
-            <div
-              class="dropped-piece"
-              [ngStyle]="placedStyles()[dropzone!]"
-            ></div>
-          }
-        </div>
+          class="draggable"
+          [style.background-image]="'url(' + baseImage() + ')'"
+          [style.background-position]="
+            '-' +
+            bgPositions()[cell.placed].left +
+            'vw -' +
+            bgPositions()[cell.placed].top +
+            'vw'
+          "
+        ></div>
+        }
+      </div>
       }
     </div>
 
-    <!-- Imagen final con botones -->
-    <div class="final-img" [style.background-image]="'url(' + imageUrl() + ')'">
+    <div
+      class="final-img"
+      [style.background-image]="'url(' + baseImage() + ')'"
+    >
       <div class="btns">
-        <button class="img-btn btn" (click)="randomImage()">get random image</button>
-        <label for="input-file" class="img-btn btn">upload new image</label>
+        <button class="btn" (click)="resetGame()">Random image</button>
+        <label for="file-upload" class="btn">Upload Image</label>
       </div>
-      <input type="file" id="input-file" (change)="uploadImage($event)" />
+      <input
+        type="file"
+        accept="image/jpeg, image/png, image/jpg"
+        id="file-upload"
+        (change)="handleImageUpload($event)"
+      />
     </div>
   </div>
 
-  <!-- Modal -->
   @if (showModal()) {
-    <div class="modal active">
-      <div class="modal-content">
-        <h2 class="modal-heading">Game Over</h2>
-        <h3 class="modal-text">
-          {{ modalMessage() }} <span class="attempt">{{ attempts() }}</span> wrong attempts
-        </h3>
-        <button class="modal-btn btn" (click)="startAgain()">Start Again</button>
-      </div>
+  <div class="modal">
+    <div class="modal-content">
+      <h2 class="modal-heading">Game Over</h2>
+      <h3 class="modal-text">
+        @if (won()) { YOU WON 😍.
+        <span class="attempt">{{ wrong() }}</span> wrong attempts } @else { You
+        Lost 😢. Please Try Again }
+      </h3>
+      <button class="modal-btn btn" (click)="resetGame()">Start Again</button>
     </div>
-  }
-
-  <!-- Loader -->
-  <div class="loader" [class.active]="isLoading()">
-    <!-- <img src="assets/images/loader.gif" /> -->
   </div>
+  }
 
   <h1 class="heading">Puzzle Quest</h1>
 </div>
